@@ -1,6 +1,7 @@
 import mysql.connector
 from datetime import datetime
 
+
 def addstudent():
     card_id = int(input("Wczytaj kartę: "))
     first_name = input("Podaj imię: ")
@@ -18,10 +19,12 @@ def addstudent():
         print(x)
     student_class = input("Podaj klase: ")
     variables = [card_id, first_name, last_name, student_class]
-    sql = "INSERT INTO uczen (id_ucznia, karta, imie, nazwisko, id_klasy_fk) VALUES(NULL, %s, %s, %s, (SELECT id_klasy FROM klasa WHERE nazwa_klasy = %s))"
+    sql = "INSERT INTO uczen (id_ucznia, karta, imie, nazwisko, id_klasy_fk) VALUES(NULL, %s, %s, %s," \
+          " (SELECT id_klasy FROM klasa WHERE nazwa_klasy = %s))"
     mycursor.execute(sql, variables)
     database.commit()
     database.close()
+
 
 def check_presence():
     # otwieranie połączenia
@@ -32,7 +35,7 @@ def check_presence():
         database="presence_check"
     )
 
-    #sprawdza czy podana sala istnieje jesli nie sprawdza do skutku
+    # sprawdza czy podana sala istnieje jesli nie sprawdza do skutku
     nr_sali = 0
     while nr_sali == 0:
         nr_sali = int(input("Podaj numer sali: "))
@@ -51,7 +54,8 @@ def check_presence():
             while elo == 1:
                 time_now = datetime.now()
                 var_lekcja = [time_now, time_now, nr_sali]
-                q_lekcja = "SELECT lekcja.id_lekcji, sala.numer_sali, dataiczas.dic_start, dataiczas.dic_stop, klasa.nazwa_klasy, przedmiot.nazwa_przedmiotu " \
+                q_lekcja = "SELECT lekcja.id_lekcji, sala.numer_sali, dataiczas.dic_start, dataiczas.dic_stop," \
+                           " klasa.nazwa_klasy, przedmiot.nazwa_przedmiotu " \
                            "FROM ((((lekcja LEFT JOIN dataiczas ON dataiczas.id_dic=lekcja.id_dic_fk) " \
                            "LEFT JOIN sala ON sala.id_sali=lekcja.id_sali_fk) " \
                            "LEFT JOIN klasa ON klasa.id_klasy=lekcja.id_klasy_fk)" \
@@ -62,31 +66,34 @@ def check_presence():
                 if chk_lekcja != 1:
                     input("Nie ma lekcji w tej sali\n Kliknij Enter aby sprawdzić ponownie...")
 
-                #jeśli jest przypisana pokazuje jej wartości i pozwala zczytać kartę
+                # jeśli jest przypisana pokazuje jej wartości i pozwala zczytać kartę
                 else:
                     for x in mycursor:
                         wp_lekcja = x
                     d0 = time_now.strftime("%H:%M")
                     d1 = wp_lekcja[2].strftime("%H:%M")
                     d2 = wp_lekcja[3].strftime("%H:%M")
-                    print("Sala: " + str(wp_lekcja[1]) + "\nAktualny czas: " + d0 + "\nRozpoczęcie lekcji: " + d1 + "\nKoniec lekcji: " + d2 + "\nKlasa: " + wp_lekcja[4] + "\nPrzedmiot: " + wp_lekcja[5])
+                    print("Sala: " + str(wp_lekcja[1]) + "\nAktualny czas: " + d0 + "\nRozpoczęcie lekcji: " + d1 +
+                          "\nKoniec lekcji: " + d2 + "\nKlasa: " + wp_lekcja[4] + "\nPrzedmiot: " + wp_lekcja[5])
                     benc = 1
                     while benc == 1:
                         nr_karty = int(input("Przyłóż karte: "))
                         var_uczen = [nr_karty]
 
-                        #wprowadzenie 0 sprawdza ponownie status lekcji, a poniżej kończy funkcję
+                        # wprowadzenie 0 sprawdza ponownie status lekcji, a poniżej kończy funkcję
                         if nr_karty == 0:
                             benc = 0
                         elif nr_karty < 0:
                             elo = 0
                             benc = 0
 
-                        #następnie sprawdza ucznia, najpierw czy istnieje a potem
-                        #czy lekcja przypisana do sali jest dla jego klasy
+                        # następnie sprawdza ucznia, najpierw czy istnieje a potem
+                        # czy lekcja przypisana do sali jest dla jego klasy
                         else:
-                            q_uczen = "SELECT uczen.id_ucznia, uczen.karta, uczen.imie, uczen.nazwisko, klasa.nazwa_klasy " \
-                                      "FROM uczen LEFT JOIN klasa ON uczen.id_klasy_fk = klasa.id_klasy WHERE karta = %s"
+                            q_uczen = "SELECT uczen.id_ucznia, uczen.karta, uczen.imie, uczen.nazwisko," \
+                                      " klasa.nazwa_klasy " \
+                                      "FROM uczen LEFT JOIN klasa ON uczen.id_klasy_fk = klasa.id_klasy WHERE" \
+                                      " karta = %s"
                             mycursor.execute(q_uczen, var_uczen)
                             chk_uczen = mycursor.rowcount
                             if chk_uczen == 0:
@@ -98,8 +105,8 @@ def check_presence():
                                 if wp_uczen[4] != wp_lekcja[4]:
                                     print("Chyba klasy ci się pomyliły XD")
 
-                                #Jęśli wszystko się zgadza sprawdza czy uczen ma już wpisana
-                                #obecnosc a jesli nie wpisuje ja
+                                # Jęśli wszystko się zgadza sprawdza czy uczen ma już wpisana
+                                # obecnosc a jesli nie wpisuje ja
                                 else:
                                     q_preputis = "SELECT * FROM wpis WHERE id_lekcji_fk = %s AND id_ucznia_fk = %s"
                                     var_preputis = [wp_lekcja[0], wp_uczen[0]]
@@ -109,7 +116,8 @@ def check_presence():
                                         print("Już masz obecność XD")
                                     else:
                                         var_putis = [wp_lekcja[0], wp_uczen[0], 1]
-                                        q_putis = "INSERT INTO wpis (id_lekcji_fk, id_ucznia_fk, obecnosc) VALUES (%s ,%s , %s)"
+                                        q_putis = "INSERT INTO wpis (id_lekcji_fk, id_ucznia_fk, obecnosc)" \
+                                                  " VALUES (%s ,%s , %s)"
                                         mycursor.execute(q_putis, var_putis)
                                         database.commit()
                                         print("Dodano obecność byczku")
@@ -117,11 +125,12 @@ def check_presence():
                                         q_end = "SELECT * FROM wpis WHERE id_lekcji_fk = %s AND id_ucznia_fk = %s"
                                         mycursor.execute(q_end, var_end)
 
-    #kończenie połączenia z bazą
+    # kończenie połączenia z bazą
     database.close()
 
+
 def addclass():
-    #trudno tu coś spierdolić
+    # trudno tu coś *REDACTED*
     class_name = input("Podaj nazwe klasy: ")
 
     database = mysql.connector.connect(
@@ -136,6 +145,7 @@ def addclass():
     mycursor.execute(sql, variables)
     database.commit()
     database.close()
+
 
 def choice():
     print("Dostępne funkcje: \n1. Sprawdź obecność\n2. Dodaj ucznia\n3. Dodaj klasę\n4. Dodaj lekcję")
@@ -166,7 +176,7 @@ def addlesson():
     dic = 0
     klasa = 0
     sala = 0
-    #whileuje sie ile chcesz
+    # whileuje sie ile chcesz
     while gn == 0:
         przedmiot = input("Podaj nazwę przedmiotu: ")
         dic = input("Podaj date i czas rozpoczecia(rrrr-mm-dd gg-mm-ss): ")
@@ -179,7 +189,7 @@ def addlesson():
 
     sala = int(sala)
 
-    #wrzucanie do bazy danych
+    # wrzucanie do bazy danych
     variables = [przedmiot, dic, klasa, sala]
 
     sql = "INSERT INTO lekcja (id_lekcji, id_przedmiotu_fk, id_dic_fk,id_klasy_fk, id_sali_fk)" \
@@ -190,7 +200,7 @@ def addlesson():
     mycursor.execute(sql, variables)
     database.commit()
 
-    #wrzuca na ekran dodany wpis, no chyba że źle wpisałeś to najnowszy
+    # wrzuca na ekran dodany wpis, no chyba że źle wpisałeś to najnowszy
     mycursor.execute("SELECT * FROM lekcja order by id_lekcji desc limit 1")
     for x in mycursor:
         print(x)
