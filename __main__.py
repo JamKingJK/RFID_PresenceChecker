@@ -110,7 +110,7 @@ def check_presence():
                                         q_putis = "INSERT INTO wpis (id_lekcji_fk, id_ucznia_fk, obecnosc) VALUES (%s ,%s , %s)"
                                         mycursor.execute(q_putis, var_putis)
                                         database.commit()
-                                        print("Dodano obecność byczku")
+                                        print("Dodano obecność ")
                                         var_end = [wp_lekcja[0], wp_uczen[0]]
                                         q_end = "SELECT * FROM wpis WHERE id_lekcji_fk = %s AND id_ucznia_fk = %s"
                                         mycursor.execute(q_end, var_end)
