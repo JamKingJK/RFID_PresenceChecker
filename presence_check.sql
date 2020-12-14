@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Czas generowania: 11 Lis 2020, 00:14
+-- Czas generowania: 20 Lis 2020, 09:42
 -- Wersja serwera: 10.4.14-MariaDB
 -- Wersja PHP: 7.4.10
 
@@ -33,16 +33,6 @@ CREATE TABLE `dataiczas` (
   `dic_stop` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
 
---
--- Zrzut danych tabeli `dataiczas`
---
-
-INSERT INTO `dataiczas` (`id_dic`, `dic_start`, `dic_stop`) VALUES
-(1, '2020-11-12 08:00:00', '2020-11-12 08:45:00'),
-(2, '2020-11-12 08:50:00', '2020-11-12 09:35:00'),
-(3, '2020-11-12 09:40:00', '2020-11-12 10:25:00'),
-(4, '2020-11-12 10:30:00', '2020-11-12 11:15:00');
-
 -- --------------------------------------------------------
 
 --
@@ -66,7 +56,8 @@ INSERT INTO `klasa` (`id_klasy`, `nazwa_klasy`) VALUES
 (5, '3A'),
 (6, '3B'),
 (7, '3C'),
-(8, '4A');
+(8, '4A'),
+(9, '2C');
 
 -- --------------------------------------------------------
 
@@ -81,14 +72,6 @@ CREATE TABLE `lekcja` (
   `id_klasy_fk` int(11) NOT NULL,
   `id_sali_fk` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
-
---
--- Zrzut danych tabeli `lekcja`
---
-
-INSERT INTO `lekcja` (`id_lekcji`, `id_przedmiotu_fk`, `id_dic_fk`, `id_klasy_fk`, `id_sali_fk`) VALUES
-(1, 1, 1, 1, 1),
-(2, 1, 1, 7, 7);
 
 -- --------------------------------------------------------
 
@@ -155,17 +138,6 @@ CREATE TABLE `uczen` (
   `id_klasy_fk` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
 
---
--- Zrzut danych tabeli `uczen`
---
-
-INSERT INTO `uczen` (`id_ucznia`, `karta`, `imie`, `nazwisko`, `id_klasy_fk`) VALUES
-(1, 2137, 'Dawid', 'Kozieł', 1),
-(2, 3692, 'Kacpur', 'Pągowski', 2),
-(7, 1234, 'Elo', 'Benc', 2),
-(8, 123456, 'Kacper', 'Cwel', 1),
-(9, 2136, 'Maruś', 'Testowy', 5);
-
 -- --------------------------------------------------------
 
 --
@@ -177,14 +149,6 @@ CREATE TABLE `wpis` (
   `id_ucznia_fk` int(11) NOT NULL,
   `obecnosc` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
-
---
--- Zrzut danych tabeli `wpis`
---
-
-INSERT INTO `wpis` (`id_lekcji_fk`, `id_ucznia_fk`, `obecnosc`) VALUES
-(1, 1, 1),
-(1, 2, 0);
 
 --
 -- Indeksy dla zrzutów tabel
@@ -207,10 +171,10 @@ ALTER TABLE `klasa`
 --
 ALTER TABLE `lekcja`
   ADD PRIMARY KEY (`id_lekcji`),
+  ADD KEY `dic_key` (`id_dic_fk`),
   ADD KEY `klasa_keyL` (`id_klasy_fk`),
   ADD KEY `przedmiot_key` (`id_przedmiotu_fk`),
-  ADD KEY `sala_key` (`id_sali_fk`),
-  ADD KEY `dic_key` (`id_dic_fk`);
+  ADD KEY `sala_key` (`id_sali_fk`);
 
 --
 -- Indeksy dla tabeli `przedmiot`
@@ -235,8 +199,8 @@ ALTER TABLE `uczen`
 -- Indeksy dla tabeli `wpis`
 --
 ALTER TABLE `wpis`
-  ADD KEY `id_ucznia_key` (`id_ucznia_fk`),
-  ADD KEY `id_lekcji_key` (`id_lekcji_fk`);
+  ADD KEY `id_lekcji_key` (`id_lekcji_fk`),
+  ADD KEY `id_ucznia_key` (`id_ucznia_fk`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -246,25 +210,25 @@ ALTER TABLE `wpis`
 -- AUTO_INCREMENT dla tabeli `dataiczas`
 --
 ALTER TABLE `dataiczas`
-  MODIFY `id_dic` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_dic` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=267;
 
 --
 -- AUTO_INCREMENT dla tabeli `klasa`
 --
 ALTER TABLE `klasa`
-  MODIFY `id_klasy` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id_klasy` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT dla tabeli `lekcja`
 --
 ALTER TABLE `lekcja`
-  MODIFY `id_lekcji` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_lekcji` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT dla tabeli `przedmiot`
 --
 ALTER TABLE `przedmiot`
-  MODIFY `id_przedmiotu` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_przedmiotu` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT dla tabeli `sala`
@@ -276,7 +240,7 @@ ALTER TABLE `sala`
 -- AUTO_INCREMENT dla tabeli `uczen`
 --
 ALTER TABLE `uczen`
-  MODIFY `id_ucznia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id_ucznia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- Ograniczenia dla zrzutów tabel
@@ -286,23 +250,23 @@ ALTER TABLE `uczen`
 -- Ograniczenia dla tabeli `lekcja`
 --
 ALTER TABLE `lekcja`
-  ADD CONSTRAINT `dic_key` FOREIGN KEY (`id_dic_fk`) REFERENCES `dataiczas` (`id_dic`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `klasa_keyL` FOREIGN KEY (`id_klasy_fk`) REFERENCES `klasa` (`id_klasy`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `przedmiot_key` FOREIGN KEY (`id_przedmiotu_fk`) REFERENCES `przedmiot` (`id_przedmiotu`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `sala_key` FOREIGN KEY (`id_sali_fk`) REFERENCES `sala` (`id_sali`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `dic_key` FOREIGN KEY (`id_dic_fk`) REFERENCES `dataiczas` (`id_dic`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `klasa_keyL` FOREIGN KEY (`id_klasy_fk`) REFERENCES `klasa` (`id_klasy`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `przedmiot_key` FOREIGN KEY (`id_przedmiotu_fk`) REFERENCES `przedmiot` (`id_przedmiotu`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `sala_key` FOREIGN KEY (`id_sali_fk`) REFERENCES `sala` (`id_sali`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Ograniczenia dla tabeli `uczen`
 --
 ALTER TABLE `uczen`
-  ADD CONSTRAINT `id_klasy_keyU` FOREIGN KEY (`id_klasy_fk`) REFERENCES `klasa` (`id_klasy`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `id_klasy_keyU` FOREIGN KEY (`id_klasy_fk`) REFERENCES `klasa` (`id_klasy`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Ograniczenia dla tabeli `wpis`
 --
 ALTER TABLE `wpis`
-  ADD CONSTRAINT `id_lekcji_key` FOREIGN KEY (`id_lekcji_fk`) REFERENCES `lekcja` (`id_lekcji`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `id_ucznia_key` FOREIGN KEY (`id_ucznia_fk`) REFERENCES `uczen` (`id_ucznia`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `id_lekcji_key` FOREIGN KEY (`id_lekcji_fk`) REFERENCES `lekcja` (`id_lekcji`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `id_ucznia_key` FOREIGN KEY (`id_ucznia_fk`) REFERENCES `uczen` (`id_ucznia`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
