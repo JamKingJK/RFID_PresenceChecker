@@ -1,8 +1,9 @@
 import mysql.connector
 from datetime import datetime, timedelta
 
+
 def addstudent():
-    #wpisywanie danych
+    # wpisywanie danych
     card_id = int(input("Wczytaj kartę: "))
     first_name = input("Podaj imię: ")
     last_name = input("Podaj nazwisko: ")
@@ -14,16 +15,18 @@ def addstudent():
         database="presence_check"
     )
     mycursor = database.cursor(buffered=True)
-    #wypisywanie dostepnych klas
+    # wypisywanie dostepnych klas
     mycursor.execute("SELECT * FROM klasa")
     for x in mycursor:
         print(x)
     student_class = input("Podaj klase: ")
     variables = [card_id, first_name, last_name, student_class]
-    sql = "INSERT INTO uczen (id_ucznia, karta, imie, nazwisko, id_klasy_fk) VALUES(NULL, %s, %s, %s, (SELECT id_klasy FROM klasa WHERE nazwa_klasy = %s))"
+    sql = "INSERT INTO uczen (id_ucznia, karta, imie, nazwisko, id_klasy_fk) VALUES(NULL, %s, %s, %s, " \
+          "(SELECT id_klasy FROM klasa WHERE nazwa_klasy = %s))"
     mycursor.execute(sql, variables)
     database.commit()
     database.close()
+
 
 def check_presence2(sala):
     database = mysql.connector.connect(
@@ -38,7 +41,8 @@ def check_presence2(sala):
     while elo == 1:
         time_now = datetime.now()
         var_lekcja = [time_now, time_now, sala]
-        q_lekcja = "SELECT lekcja.id_lekcji, sala.numer_sali, dataiczas.dic_start, dataiczas.dic_stop, klasa.nazwa_klasy, przedmiot.nazwa_przedmiotu " \
+        q_lekcja = "SELECT lekcja.id_lekcji, sala.numer_sali, dataiczas.dic_start, dataiczas.dic_stop," \
+                   " klasa.nazwa_klasy, przedmiot.nazwa_przedmiotu " \
                    "FROM ((((lekcja LEFT JOIN dataiczas ON dataiczas.id_dic=lekcja.id_dic_fk) " \
                    "LEFT JOIN sala ON sala.id_sali=lekcja.id_sali_fk) " \
                    "LEFT JOIN klasa ON klasa.id_klasy=lekcja.id_klasy_fk)" \
@@ -48,18 +52,20 @@ def check_presence2(sala):
         chk_lekcja = mycursor.rowcount
         if chk_lekcja != 1:
             if input("Nie ma lekcji w tej sali\n Kliknij Enter aby sprawdzić ponownie...") == '1':
-                elo == 0
+                elo = 0
                 check_presence1()
 
         # jeśli jest przypisana pokazuje jej wartości i pozwala zczytać kartę
         else:
+            wp_lekcja = []
             for x in mycursor:
                 wp_lekcja = x
             d0 = time_now.strftime("%H:%M")
             d1 = wp_lekcja[2].strftime("%H:%M")
             d2 = wp_lekcja[3].strftime("%H:%M")
             print("Sala: " + str(wp_lekcja[
-                                     1]) + "\nAktualny czas: " + d0 + "\nRozpoczęcie lekcji: " + d1 + "\nKoniec lekcji: " + d2 + "\nKlasa: " +
+                                     1]) + "\nAktualny czas: " + d0 + "\nRozpoczęcie lekcji: " + d1 +
+                  "\nKoniec lekcji: " + d2 + "\nKlasa: " +
                   wp_lekcja[4] + "\nPrzedmiot: " + wp_lekcja[5])
             benc = 1
             while benc == 1:
@@ -80,6 +86,7 @@ def check_presence2(sala):
                     if chk_uczen == 0:
                         print("Nie znaleziono ucznia z tą kartą")
                     else:
+                        wp_uczen = []
                         for x in mycursor:
                             print(x)
                             wp_uczen = x
@@ -105,6 +112,7 @@ def check_presence2(sala):
                                 q_end = "SELECT * FROM wpis WHERE id_lekcji_fk = %s AND id_ucznia_fk = %s"
                                 mycursor.execute(q_end, var_end)
 
+
 def check_presence1():
     database = mysql.connector.connect(
         host="localhost",
@@ -113,7 +121,7 @@ def check_presence1():
         database="presence_check"
     )
 
-    #sprawdza czy podana sala istnieje, jesli nie sprawdza do skutku
+    # sprawdza czy podana sala istnieje, jesli nie sprawdza do skutku
     nr_sali = 0
     while nr_sali == 0:
         nr_sali = int(input("Podaj numer sali: "))
@@ -129,8 +137,9 @@ def check_presence1():
             database.close()
             check_presence2(nr_sali)
 
+
 def addclass():
-    #DoDawAnie KlasY
+    # DoDawAnie KlasY
     class_name = input("Podaj nazwe klasy: ")
 
     database = mysql.connector.connect(
@@ -146,7 +155,8 @@ def addclass():
     database.commit()
     database.close()
 
-def addAbsence():
+
+def addabsence():
     database = mysql.connector.connect(
         host="localhost",
         user="root",
@@ -154,7 +164,7 @@ def addAbsence():
         database="presence_check"
     )
     mycursor = database.cursor(buffered=True)
-    #wpisywanie danych
+    # wpisywanie danych
     klasa = input("Podaj klasę: ")
     dic = input("Podaj date: ")
     dic = datetime.strptime(dic, "%Y-%m-%d")
@@ -163,41 +173,43 @@ def addAbsence():
     lekcje = []
     dict = []
     variable = [klasa]
-    #wrzuca wszystkich uczniów z podanej klasy do listy
-    q_klasa = "SELECT uczen.id_ucznia FROM uczen LEFT JOIN klasa ON klasa.id_klasy=uczen.id_klasy_fk WHERE klasa.nazwa_klasy = %s"
+    # wrzuca wszystkich uczniów z podanej klasy do listy
+    q_klasa = "SELECT uczen.id_ucznia FROM uczen LEFT JOIN klasa ON klasa.id_klasy=uczen.id_klasy_fk " \
+              "WHERE klasa.nazwa_klasy = %s"
     mycursor.execute(q_klasa, variable)
     for x in mycursor:
         uczen.append(x[0])
-    #wrzuca wszystkie wpisy czasu do listy
+    # wrzuca wszystkie wpisy czasu do listy
     variable = [dic, dice]
     q_data = "SELECT id_dic FROM dataiczas WHERE dic_start > %s AND dic_start < %s"
     mycursor.execute(q_data, variable)
     for x in mycursor:
         dict.append(x[0])
-    print(dict) #wypisuje id dat i czasu
-    #dodaje wszystkie lekcje z podanego dnia do listy
+    print(dict)  # wypisuje id dat i czasu
+    # dodaje wszystkie lekcje z podanego dnia do listy
     elo = 0
     for x in dict:
         variable = [dict[elo], klasa]
-        q_chkdic = "SELECT lekcja.id_lekcji FROM lekcja LEFT JOIN klasa ON klasa.id_klasy = lekcja.id_klasy_fk WHERE id_dic_fk = %s AND klasa.nazwa_klasy = %s"
+        q_chkdic = "SELECT lekcja.id_lekcji FROM lekcja LEFT JOIN klasa ON klasa.id_klasy = lekcja.id_klasy_fk " \
+                   "WHERE id_dic_fk = %s AND klasa.nazwa_klasy = %s"
         mycursor.execute(q_chkdic, variable)
         for x in mycursor:
             lekcje.append(x[0])
         elo = elo + 1
     print(lekcje)
-    #sprawdzanie długości tabel, potrzebne do petel
+    # sprawdzanie długości tabel, potrzebne do petel
     dllek = len(lekcje)
     dlucz = len(uczen)
     x = 0
     y = 0
-    #wybiera lekcje z tabeli
+    # wybiera lekcje z tabeli
     while x < dllek:
-        #wybiera uczniow z tabeli
+        # wybiera uczniow z tabeli
         while y < dlucz:
             variable = [lekcje[x], uczen[y]]
             q_prefinal = "SELECT * FROM wpis WHERE id_lekcji_fk = %s AND id_ucznia_fk = %s"
             mycursor.execute(q_prefinal, variable)
-            #jesli uczen nie ma wpisu do lekcji wpisuje mu na niej nieobecnosc, a jesli ma wpis przechodzi dalej
+            # jesli uczen nie ma wpisu do lekcji wpisuje mu na niej nieobecnosc, a jesli ma wpis przechodzi dalej
             prefinalc = mycursor.rowcount
             if prefinalc == 0:
                 q_final = "INSERT INTO wpis (id_lekcji_fk, id_ucznia_fk, obecnosc) VALUES (%s, %s, 0)"
@@ -208,8 +220,10 @@ def addAbsence():
         x = x + 1
     database.close()
 
+
 def choice():
-    print("Dostępne funkcje: \n1. Sprawdź obecność\n2. Dodaj ucznia\n3. Dodaj klasę\n4. Dodaj lekcję\n5. Dodaj przedmiot\n6. Dodaj nieobecności"
+    print("Dostępne funkcje: \n1. Sprawdź obecność\n2. Dodaj ucznia\n3. Dodaj klasę\n4. Dodaj lekcję\n5. "
+          "Dodaj przedmiot\n6. Dodaj nieobecności"
           "\n7. Sprawdź plan lekcji")
     user_choice = input("Wybierz, co chcesz zrobić: ")
     if user_choice == "1":
@@ -223,11 +237,12 @@ def choice():
     elif user_choice == "5":
         addsubject()
     elif user_choice == "6":
-        addAbsence()
+        addabsence()
     elif user_choice  == "7":
-        lessonPlan()
+        lessonplan()
     else:
         print("DEBUG. Wrong choice")
+
 
 def dic():
 
@@ -245,14 +260,14 @@ def dic():
     if dic_chk_s == 0:
         datastr = "2020-09-01"
         datastopstr = "2021-06-26"
-        #konwersja stringow na datetime
+        # konwersja stringow na datetime
         data = datetime.strptime(datastr, "%Y-%m-%d")
         datastop = datetime.strptime(datastopstr, "%Y-%m-%d")
-        #wpisywanie dat i czasu to tabel
+        # wpisywanie dat i czasu to tabel
         while data <= datastop:
-            #sprawdza czy dzien nie jest w weekend
+            # sprawdza czy dzien nie jest w weekend
             dtyg = datetime.weekday(data)
-            if dtyg >= 0 and dtyg <=4:
+            if 0 <= dtyg <= 4:
                 dic10 = datastr + " 8:00"
                 dic11 = datastr + " 8:45"
                 dic20 = datastr + " 8:50"
@@ -273,7 +288,7 @@ def dic():
                 dic91 = datastr + " 15:50"
                 dicstart = (dic10, dic20, dic30, dic40, dic50, dic60, dic70, dic80, dic90)
                 dicstop = (dic11, dic21, dic31, dic41, dic51, dic61, dic71, dic81, dic91)
-                #sprawdza najpierw czy wpis istnieje
+                # sprawdza najpierw czy wpis istnieje
                 x = 0
                 while x <= 8:
                     variables = [dicstart[x], dicstop[x]]
@@ -282,9 +297,9 @@ def dic():
                     dic_check_w = mycursor.rowcount
                     if dic_check_w == 1:
                         x = x + 1
-                        #do nothing
+                        # do nothing
                     else:
-                        #potem dodaje wpis
+                        # potem dodaje wpis
                         dic_add = "INSERT dataiczas (id_dic, dic_start, dic_stop) VALUES (NULL, %s, %s)"
                         mycursor.execute(dic_add, variables)
                         database.commit()
@@ -292,6 +307,7 @@ def dic():
             data = data + timedelta(days=1)
             datastr = datetime.strftime(data, "%Y-%m-%d")
         database.close()
+
 
 def addlesson():
 
@@ -304,7 +320,7 @@ def addlesson():
 
     mycursor = database.cursor(buffered=True)
     gn = 0
-    #whileuje sie ile chcesz
+    # whileuje sie ile chcesz
     while gn == 0:
         przedmiot = input("Podaj nazwę przedmiotu: ")
         dic = input("Podaj date i czas rozpoczecia(rrrr-mm-dd gg-mm-ss): ")
@@ -317,7 +333,7 @@ def addlesson():
 
     sala = int(sala)
 
-    #wrzucanie do bazy danych
+    # wrzucanie do bazy danych
     variables = [przedmiot, dic, klasa, sala]
     sql = "INSERT INTO lekcja (id_lekcji, id_przedmiotu_fk, id_dic_fk,id_klasy_fk, id_sali_fk)" \
           "VALUES(NULL, (SELECT id_przedmiotu FROM przedmiot WHERE nazwa_przedmiotu = %s)," \
@@ -327,12 +343,13 @@ def addlesson():
     mycursor.execute(sql, variables)
     database.commit()
 
-    #wrzuca na ekran dodany wpis, no chyba że źle wpisałeś to najnowszy
+    # wrzuca na ekran dodany wpis, no chyba że źle wpisałeś to najnowszy
     mycursor.execute("SELECT * FROM lekcja order by id_lekcji desc limit 1")
     for x in mycursor:
         print(x)
 
     database.close()
+
 
 def addsubject():
     database = mysql.connector.connect(
@@ -344,7 +361,7 @@ def addsubject():
     mycursor = database.cursor(buffered=True)
     mycursor.execute("SELECT nazwa_przedmiotu FROM przedmiot")
     benc = mycursor.fetchall()
-    #wypisuje aktywne przedmioty, po czym można dodać nowy przedmiot
+    # wypisuje aktywne przedmioty, po czym można dodać nowy przedmiot
     print("Aktywne przedmioty:\n")
     for x in benc:
         print(x)
@@ -352,7 +369,7 @@ def addsubject():
     variable = [lesson_name]
     chkles = "SELECT nazwa_przedmiotu FROM przedmiot WHERE nazwa_przedmiotu = %s"
     mycursor.execute(chkles, variable)
-    #sprawdza czy przedmiot istnieje
+    # sprawdza czy przedmiot istnieje
     chk = mycursor.rowcount
     if chk == 1:
         print("Podany przedmiot już istnieje")
@@ -365,7 +382,8 @@ def addsubject():
             print(x)
     database.close()
 
-def lessonPlan():
+
+def lessonplan():
     database = mysql.connector.connect(
         host="localhost",
         user="root",
@@ -409,7 +427,8 @@ def lessonPlan():
         zdicstart += 1
 
     weekday = 0
-    show_weekday = ["------/:Poniedziałek:/------", "------/:Wtorek:/------", "------/:Środa:/------", "------/:Czwartek:/------", "------/:Piątek:/------"]
+    show_weekday = ["------/:Poniedziałek:/------", "------/:Wtorek:/------", "------/:Środa:/------",
+                    "------/:Czwartek:/------", "------/:Piątek:/------"]
     while weekday <= 4:
         print(show_weekday[weekday])
         lesson_hour = 0
@@ -434,6 +453,7 @@ def lessonPlan():
         weekday += 1
 
     database.close()
+
 
 def main():
     dic()
